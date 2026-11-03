@@ -13,28 +13,40 @@ include "koneksi.php";
 <body>
 
     <div class="dashboard-container">
-        <aside class="sidebar">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebarNav">
             <div>
                 <div class="sidebar-header">
                     <img src="img/Logo Telkom Dark.webp" alt="Logo Telkom Property" class="sidebar-logo">
                 </div>
                 <ul class="sidebar-menu">
-                    <li class="active"><a href="index.php">Beranda</a></li>
-                    <li><a href="dokumen.php">Dokumen</a></li>
-                    <li><a href="unggah.php">Unggah Baru</a></li>
-                    <li><a href="histori.php">Histori</a></li>
+                    <li class="active"><a href="index.php"><span>Beranda</span></a></li>
+                    <li><a href="dokumen.php"><span>Dokumen</span></a></li>
+                    <li><a href="unggah.php"><span>Unggah Baru</span></a></li>
+                    <li><a href="histori.php"><span>Histori</span></a></li>
                 </ul>
             </div>
+            
+            <!-- Drop-Up Account Menu di Footer Sidebar -->
             <div class="sidebar-footer">
-                <div class="user-profile">
-                    <span>Telpro BIM</span>
-                    <span>v</span>
+                <div id="dropupMenu" class="dropup-menu">
+                    <button class="dropup-item" onclick="tampilkanModal('Pengaturan Akun', 'Membuka pengaturan profil dan preferensi sistem.')">⚙️ Pengaturan</button>
+                    <button class="dropup-item logout" onclick="tampilkanModal('Keluar Sistem', 'Anda yakin ingin keluar dari sesi ini?')">🚪 Keluar</button>
+                </div>
+                <div class="user-profile" onclick="toggleDropup(event)">
+                    <div class="user-info">
+                        <span>👤</span>
+                        <span class="user-info-text">Telpro BJM</span>
+                    </div>
+                    <span class="user-arrow">▲</span>
                 </div>
             </div>
         </aside>
 
+        <!-- Main Content -->
         <main class="main-content">
             <header class="main-header">
+                <button class="btn-toggle" onclick="toggleSidebar()">☰ Menu</button>
                 <span>Beranda /</span>
             </header>
 
@@ -117,6 +129,22 @@ include "koneksi.php";
     </div>
 
     <script>
+        function toggleSidebar() {
+            document.getElementById("sidebarNav").classList.toggle("collapsed");
+        }
+
+        function toggleDropup(event) {
+            event.stopPropagation();
+            document.getElementById("dropupMenu").classList.toggle("active");
+        }
+
+        window.onclick = function() {
+            let dropup = document.getElementById("dropupMenu");
+            if (dropup.classList.contains("active")) {
+                dropup.classList.remove("active");
+            }
+        }
+
         function tampilkanModal(judul, pesan) {
             document.getElementById("modalTitle").innerText = judul;
             document.getElementById("modalMessage").innerHTML = pesan;
