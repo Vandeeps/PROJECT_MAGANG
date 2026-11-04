@@ -1,7 +1,8 @@
 <?php
 include "koneksi.php";
-?>
 
+$hasil = mysqli_query($koneksi, "SELECT id_data, waktu, file, nama_file, jenis_file, deskripsi FROM data ORDER BY waktu DESC");
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -13,7 +14,6 @@ include "koneksi.php";
 <body>
 
     <div class="dashboard-container">
-        <!-- Sidebar -->
         <aside class="sidebar" id="sidebarNav">
             <div>
                 <div class="sidebar-header">
@@ -27,7 +27,6 @@ include "koneksi.php";
                 </ul>
             </div>
 
-            <!-- Drop-Up Account Menu di Footer Sidebar -->
             <div class="sidebar-footer">
                 <div id="dropupMenu" class="dropup-menu">
                     <button class="dropup-item" onclick="tampilkanModal('Pengaturan Akun', 'Membuka pengaturan profil dan preferensi sistem.')">⚙️ Pengaturan</button>
@@ -43,7 +42,6 @@ include "koneksi.php";
             </div>
         </aside>
 
-        <!-- Main Content -->
         <main class="main-content">
             <header class="main-header">
                 <button class="btn-toggle" onclick="toggleSidebar()">☰ Menu</button>
@@ -52,6 +50,12 @@ include "koneksi.php";
 
             <div class="content-body">
                 <h1 class="page-title">Repositori Dokumen – Pusat Data Telkom Property</h1>
+
+                <?php if (($_GET["status"] ?? "") === "sukses"): ?>
+                    <div style="background:#e8f5e9;color:#1b5e20;padding:10px 14px;border-radius:6px;margin-bottom:12px;">
+                        Dokumen berhasil diunggah.
+                    </div>
+                <?php endif; ?>
 
                 <div class="top-bar-controls">
                     <div class="search-box">
@@ -66,59 +70,34 @@ include "koneksi.php";
                             <tr>
                                 <th>Nama Dokumen</th>
                                 <th>Tipe</th>
-                                <th>Data Lokasi</th>
+                                <th>Deskripsi</th>
                                 <th>Tanggal</th>
-                                <th>Pemilik</th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>Dokumen_Gedung_A.pdf</td>
-                                <td>PDF</td>
-                                <td>Banjarmasin</td>
-                                <td>03/11/2026</td>
-                                <td>Admin</td>
-                                <td>
-                                    <button class="btn-action btn-download" onclick="tampilkanModal('Unduh Berkas', 'Memproses unduhan untuk dokumen: <b>Dokumen_Gedung_A.pdf</b>')">Unduh</button>
-                                    <button class="btn-action btn-update" onclick="tampilkanModal('Perbarui Dokumen', 'Membuka panel pembaruan untuk dokumen: <b>Dokumen_Gedung_A.pdf</b>')">Perbarui</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Denah_Lt2_Telpro.dwg</td>
-                                <td>CAD</td>
-                                <td>Banjarmasin</td>
-                                <td>02/11/2026</td>
-                                <td>Admin</td>
-                                <td>
-                                    <button class="btn-action btn-download" onclick="tampilkanModal('Unduh Berkas', 'Memproses unduhan untuk dokumen: <b>Denah_Lt2_Telpro.dwg</b>')">Unduh</button>
-                                    <button class="btn-action btn-update" onclick="tampilkanModal('Perbarui Dokumen', 'Membuka panel pembaruan untuk dokumen: <b>Denah_Lt2_Telpro.dwg</b>')">Perbarui</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Laporan_Asset_Telpro.xlsx</td>
-                                <td>XLSX</td>
-                                <td>Banjarbaru</td>
-                                <td>01/11/2026</td>
-                                <td>Nico</td>
-                                <td>
-                                    <button class="btn-action btn-download" onclick="tampilkanModal('Unduh Berkas', 'Memproses unduhan untuk dokumen: <b>Laporan_Asset_Telpro.xlsx</b>')">Unduh</button>
-                                    <button class="btn-action btn-update" onclick="tampilkanModal('Perbarui Dokumen', 'Membuka panel pembaruan untuk dokumen: <b>Laporan_Asset_Telpro.xlsx</b>')">Perbarui</button>
-                                </td>
-                            </tr>
+                            <?php if (mysqli_num_rows($hasil) === 0): ?>
+                                <tr><td colspan="5">Belum ada dokumen. Silakan unggah dari menu "Unggah Baru".</td></tr>
+                            <?php else: while ($d = mysqli_fetch_assoc($hasil)): ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($d["nama_file"]) ?></td>
+                                    <td><?= htmlspecialchars($d["jenis_file"]) ?></td>
+                                    <td><?= htmlspecialchars($d["deskripsi"]) ?></td>
+                                    <td><?= date("d/m/Y", strtotime($d["waktu"])) ?></td>
+                                    <td>
+                                        <a class="btn-action btn-download"
+                                           href="uploads/<?= rawurlencode($d["file"]) ?>"
+                                           download="<?= htmlspecialchars($d["nama_file"]) ?>">Unduh</a>
+                                    </td>
+                                </tr>
+                            <?php endwhile; endif; ?>
                         </tbody>
                     </table>
-
-                    <div class="pagination">
-                        <button onclick="tampilkanModal('Navigasi Halaman', 'Berpindah ke halaman dokumen sebelumnya.')">Sebelumnya</button>
-                        <button onclick="tampilkanModal('Navigasi Halaman', 'Berpindah ke halaman dokumen berikutnya.')">Berikutnya</button>
-                    </div>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- Custom Modal Box -->
     <div id="modalBox" class="modal-overlay">
         <div class="modal-box">
             <div id="modalTitle" class="modal-header">Notifikasi</div>
@@ -133,34 +112,24 @@ include "koneksi.php";
         function toggleSidebar() {
             document.getElementById("sidebarNav").classList.toggle("collapsed");
         }
-
         function toggleDropup(event) {
             event.stopPropagation();
             document.getElementById("dropupMenu").classList.toggle("active");
         }
-
         window.onclick = function() {
             let dropup = document.getElementById("dropupMenu");
-            if (dropup.classList.contains("active")) {
-                dropup.classList.remove("active");
-            }
+            if (dropup.classList.contains("active")) dropup.classList.remove("active");
         }
 
         function jalankanPencarian() {
-            let filter, table, tr, td, i, txtValue;
-            filter = document.getElementById("kotakPencarian").value.toLowerCase();
-            table = document.getElementById("tabelRepositori");
-            tr = table.getElementsByTagName("tr");
-
-            for (i = 1; i < tr.length; i++) {
-                td = tr[i].getElementsByTagName("td")[0];
+            let filter = document.getElementById("kotakPencarian").value.toLowerCase();
+            let tr = document.getElementById("tabelRepositori").getElementsByTagName("tr");
+            for (let i = 1; i < tr.length; i++) {
+                let td = tr[i].getElementsByTagName("td")[0];
                 if (td) {
-                    txtValue = td.textContent || td.innerText;
-                    if (txtValue.toLowerCase().indexOf(filter) > -1) {
-                        tr[i].style.display = "";
-                    } else {
-                        tr[i].style.display = "";
-                    }
+                    let teks = (td.textContent || td.innerText).toLowerCase();
+                    // Perbaikan: baris yang tidak cocok disembunyikan ("none")
+                    tr[i].style.display = teks.indexOf(filter) > -1 ? "" : "none";
                 }
             }
         }
@@ -170,7 +139,6 @@ include "koneksi.php";
             document.getElementById("modalMessage").innerHTML = pesan;
             document.getElementById("modalBox").classList.add("active");
         }
-
         function tutupModal() {
             document.getElementById("modalBox").classList.remove("active");
         }
