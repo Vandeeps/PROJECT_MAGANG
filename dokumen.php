@@ -1,4 +1,5 @@
 <?php
+include "auth.php";
 include "koneksi.php";
 
 $hasil = mysqli_query($koneksi, "SELECT id_data, waktu, file, nama_file, jenis_file, deskripsi FROM data ORDER BY waktu DESC");
@@ -30,12 +31,12 @@ $hasil = mysqli_query($koneksi, "SELECT id_data, waktu, file, nama_file, jenis_f
             <div class="sidebar-footer">
                 <div id="dropupMenu" class="dropup-menu">
                     <button class="dropup-item" onclick="tampilkanModalNotif('Pengaturan Akun', 'Membuka pengaturan profil dan preferensi sistem.')">⚙️ Pengaturan</button>
-                    <button class="dropup-item logout" onclick="tampilkanModalNotif('Keluar Sistem', 'Anda yakin ingin keluar dari sesi ini?')">🚪 Keluar</button>
+                    <a class="dropup-item logout" href="logout.php" onclick="return confirm('Anda yakin ingin keluar dari sesi ini?')">🚪 Keluar</a>
                 </div>
                 <div class="user-profile" onclick="toggleDropup(event)">
                     <div class="user-info">
                         <span>👤</span>
-                        <span class="user-info-text">Telpro BJM</span>
+                        <span class="user-info-text"><?= htmlspecialchars($namaPengguna) ?></span>
                     </div>
                     <span class="user-arrow">▲</span>
                 </div>

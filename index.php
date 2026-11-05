@@ -1,4 +1,5 @@
 <?php
+include "auth.php";
 include "koneksi.php";
 
 $queryTotal = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM data");
@@ -34,12 +35,12 @@ $queryAktivitas = mysqli_query($koneksi, "SELECT id_data, waktu, file, nama_file
             <div class="sidebar-footer">
                 <div id="dropupMenu" class="dropup-menu">
                     <button class="dropup-item" onclick="tampilkanModal('Pengaturan Akun', 'Membuka pengaturan profil dan preferensi sistem.')">⚙️ Pengaturan</button>
-                    <button class="dropup-item logout" onclick="tampilkanModal('Keluar Sistem', 'Anda yakin ingin keluar dari sesi ini?')">🚪 Keluar</button>
+                    <a class="dropup-item logout" href="logout.php" onclick="return confirm('Anda yakin ingin keluar dari sesi ini?')">🚪 Keluar</a>
                 </div>
                 <div class="user-profile" onclick="toggleDropup(event)">
                     <div class="user-info">
                         <span>👤</span>
-                        <span class="user-info-text">Telpro BJM</span>
+                        <span class="user-info-text"><?= htmlspecialchars($namaPengguna) ?></span>
                     </div>
                     <span class="user-arrow">▲</span>
                 </div>

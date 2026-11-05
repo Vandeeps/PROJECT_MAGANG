@@ -1,0 +1,11 @@
+FITUR LOGIN - Pusat Data Telkom Property
+
+File BARU   : login.php, logout.php, auth.php, setup_admin.php, css/login.css,
+              img/logo-telkom-light.png, img/peta-indonesia.svg, tambah_user_admin.sql
+File DIUBAH : index.php, dokumen.php, unggah.php, histori.php, koneksi.php
+
+Langkah:
+1. Salin semua file ke folder proyek (timpa yang lama).
+2. Buka sekali: http://localhost/NAMA_FOLDER/setup_admin.php
+   (membuat/mereset akun admin / admin123). Lalu HAPUS setup_admin.php.
+3. Buka login.php dan masuk -> otomatis ke dashboard (index.php).
