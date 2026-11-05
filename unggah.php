@@ -53,7 +53,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Unggah Baru – Pusat Data Telkom Property</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style.css?v=<?php echo time(); ?>">
 </head>
 <body>
 
@@ -73,8 +73,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             <div class="sidebar-footer">
                 <div id="dropupMenu" class="dropup-menu">
-                    <button class="dropup-item" onclick="tampilkanModal('Pengaturan Akun', 'Membuka pengaturan profil dan preferensi sistem.')">⚙️ Pengaturan</button>
-                    <button class="dropup-item logout" onclick="tampilkanModal('Keluar Sistem', 'Anda yakin ingin keluar dari sesi ini?')">🚪 Keluar</button>
+                    <button class="dropup-item" onclick="tampilkanModalNotif('Pengaturan Akun', 'Membuka pengaturan profil dan preferensi sistem.')">⚙️ Pengaturan</button>
+                    <button class="dropup-item logout" onclick="tampilkanModalNotif('Keluar Sistem', 'Anda yakin ingin keluar dari sesi ini?')">🚪 Keluar</button>
                 </div>
                 <div class="user-profile" onclick="toggleDropup(event)">
                     <div class="user-info">
@@ -99,7 +99,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     <div class="pesan-error"><?= htmlspecialchars($pesanError) ?></div>
                 <?php endif; ?>
 
-                <form class="form-unggah-modern" method="post" enctype="multipart/form-data">
+                <form id="formUnggah" class="form-unggah-modern" method="post" enctype="multipart/form-data">
                     
                     <!-- Area Dropzone / Upload Modern -->
                     <div class="upload-dropzone" id="dropzoneArea">
@@ -126,7 +126,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                     <!-- Tombol Aksi Utama -->
                     <div class="form-action-container">
-                        <button type="submit" class="btn-finalisasi">Finalisasi & Simpan Dokumen</button>
+                        <button type="button" class="btn-finalisasi" onclick="konfirmasiSimpan()">Finalisasi & Simpan Dokumen</button>
                     </div>
 
                 </form>
@@ -134,12 +134,29 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         </main>
     </div>
 
+    <!-- Modal Notifikasi Umum -->
     <div id="modalBox" class="modal-overlay">
         <div class="modal-box">
             <div id="modalTitle" class="modal-header">Notifikasi</div>
             <div id="modalMessage" class="modal-body">Pesan informasi sistem.</div>
             <div class="modal-footer">
-                <button class="btn-modal-close" onclick="tutupModal()">Tutup</button>
+                <button class="btn-modal-close" onclick="tutupModalNotif()">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Konfirmasi Simpan -->
+    <div id="modalKonfirmasi" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header" style="color: #8b0000; font-weight: bold;">Konfirmasi Unggah Dokumen</div>
+            <div class="modal-body">
+                Apakah Anda yakin data dan file yang diunggah sudah sesuai? 
+                <br><br>
+                <small style="color: #555;">Pastikan file dan deskripsi sudah benar sebelum disimpan ke sistem.</small>
+            </div>
+            <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button type="button" class="btn-modal-cancel" onclick="tutupKonfirmasi()">Belum, Cek Lagi</button>
+                <button type="button" class="btn-modal-confirm" onclick="prosesSimpan()">Ya, Sudah Sesuai</button>
             </div>
         </div>
     </div>
@@ -156,16 +173,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             let dropup = document.getElementById("dropupMenu");
             if (dropup.classList.contains("active")) dropup.classList.remove("active");
         }
-        function tampilkanModal(judul, pesan) {
+        function tampilkanModalNotif(judul, pesan) {
             document.getElementById("modalTitle").innerText = judul;
             document.getElementById("modalMessage").innerHTML = pesan;
             document.getElementById("modalBox").classList.add("active");
         }
-        function tutupModal() {
+        function tutupModalNotif() {
             document.getElementById("modalBox").classList.remove("active");
         }
 
-        // Script interaktif untuk menampilkan nama file yang dipilih secara otomatis
+        // Script untuk menampilkan nama file terpilih secara otomatis
         const fileInput = document.getElementById('berkas');
         const fileInfoDisplay = document.getElementById('fileInfoDisplay');
         const selectedFileName = document.getElementById('selectedFileName');
@@ -178,6 +195,23 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 fileInfoDisplay.style.display = 'none';
             }
         });
+
+        // Logika Kotak Konfirmasi
+        function konfirmasiSimpan() {
+            if (fileInput.files.length === 0) {
+                tampilkanModalNotif("Perhatian", "Silakan pilih berkas terlebih dahulu sebelum melakukan finalisasi!");
+                return;
+            }
+            document.getElementById("modalKonfirmasi").classList.add("active");
+        }
+
+        function tutupKonfirmasi() {
+            document.getElementById("modalKonfirmasi").classList.remove("active");
+        }
+
+        function prosesSimpan() {
+            document.getElementById("formUnggah").submit();
+        }
     </script>
 </body>
 </html>

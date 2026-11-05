@@ -1,19 +1,23 @@
 <?php
 include "koneksi.php";
-?>
 
+$queryTotal = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM data");
+$dataTotal = mysqli_fetch_assoc($queryTotal);
+$totalDokumen = $dataTotal['total'] ?? 0;
+
+$queryAktivitas = mysqli_query($koneksi, "SELECT id_data, waktu, file, nama_file, jenis_file, deskripsi FROM data ORDER BY waktu DESC LIMIT 5");
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Pusat Data Telkom Property</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style.css?v=<?php echo time(); ?>">
 </head>
 <body>
 
     <div class="dashboard-container">
-        <!-- Sidebar -->
         <aside class="sidebar" id="sidebarNav">
             <div>
                 <div class="sidebar-header">
@@ -27,7 +31,6 @@ include "koneksi.php";
                 </ul>
             </div>
             
-            <!-- Drop-Up Account Menu di Footer Sidebar -->
             <div class="sidebar-footer">
                 <div id="dropupMenu" class="dropup-menu">
                     <button class="dropup-item" onclick="tampilkanModal('Pengaturan Akun', 'Membuka pengaturan profil dan preferensi sistem.')">⚙️ Pengaturan</button>
@@ -43,7 +46,6 @@ include "koneksi.php";
             </div>
         </aside>
 
-        <!-- Main Content -->
         <main class="main-content">
             <header class="main-header">
                 <button class="btn-toggle" onclick="toggleSidebar()">☰ Menu</button>
@@ -57,7 +59,7 @@ include "koneksi.php";
                     <div class="stat-card">
                         <div class="stat-info">
                             <h3>Total Dokumen</h3>
-                            <div class="value">1,490</div>
+                            <div class="value"><?= number_format($totalDokumen) ?></div>
                         </div>
                     </div>
                     <div class="stat-card">
@@ -81,35 +83,32 @@ include "koneksi.php";
                             <tr>
                                 <th>Nama Dokumen</th>
                                 <th>Tipe</th>
-                                <th>Data Lokasi</th>
+                                <th>Deskripsi Singkat</th>
                                 <th>Tanggal</th>
-                                <th>Pemilik</th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>Dokumen_Gedung_A.pdf</td>
-                                <td>PDF</td>
-                                <td>Banjarmasin</td>
-                                <td>03/11/2026</td>
-                                <td>Admin</td>
-                                <td>
-                                    <button class="btn-action btn-download" onclick="tampilkanModal('Unduh Berkas', 'Memproses unduhan untuk dokumen: <b>Dokumen_Gedung_A.pdf</b>')">Unduh</button>
-                                    <button class="btn-action btn-update" onclick="tampilkanModal('Perbarui Dokumen', 'Membuka panel pembaruan untuk dokumen: <b>Dokumen_Gedung_A.pdf</b>')">Perbarui</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Denah_Lt2_Telpro.dwg</td>
-                                <td>CAD</td>
-                                <td>Banjarmasin</td>
-                                <td>02/11/2026</td>
-                                <td>Admin</td>
-                                <td>
-                                    <button class="btn-action btn-download" onclick="tampilkanModal('Unduh Berkas', 'Memproses unduhan untuk dokumen: <b>Denah_Lt2_Telpro.dwg</b>')">Unduh</button>
-                                    <button class="btn-action btn-update" onclick="tampilkanModal('Perbarui Dokumen', 'Membuka panel pembaruan untuk dokumen: <b>Denah_Lt2_Telpro.dwg</b>')">Perbarui</button>
-                                </td>
-                            </tr>
+                            <?php if (mysqli_num_rows($queryAktivitas) === 0): ?>
+                                <tr><td colspan="5" style="text-align: center;">Belum ada aktivitas unggahan dokumen.</td></tr>
+                            <?php else: while ($d = mysqli_fetch_assoc($queryAktivitas)): 
+                                // Potong deskripsi agar pendek di index.php
+                                $deskripsiAsli = $d["deskripsi"];
+                                $deskripsiSingkat = (mb_strlen($deskripsiAsli) > 40) ? mb_substr($deskripsiAsli, 0, 40) . "..." : $deskripsiAsli;
+                            ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($d["nama_file"]) ?></td>
+                                    <td><?= htmlspecialchars($d["jenis_file"]) ?></td>
+                                    <td><?= htmlspecialchars($deskripsiSingkat !== "" ? $deskripsiSingkat : "-") ?></td>
+                                    <td><?= date("d/m/Y", strtotime($d["waktu"])) ?></td>
+                                    <td>
+                                        <div style="display: flex; gap: 6px;">
+                                            <button type="button" class="btn-action btn-download" onclick="konfirmasiUnduh('uploads/<?= rawurlencode($d["file"]) ?>', '<?= htmlspecialchars($d["nama_file"], ENT_QUOTES) ?>')">Unduh</button>
+                                            <button type="button" class="btn-action btn-update" onclick="tampilkanModal('Informasi', 'Fitur pembaruan dokumen akan segera diperbarui.')">Perbarui</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php endwhile; endif; ?>
                         </tbody>
                     </table>
                 </div>
@@ -117,7 +116,6 @@ include "koneksi.php";
         </main>
     </div>
 
-    <!-- Custom Modal Box -->
     <div id="modalBox" class="modal-overlay">
         <div class="modal-box">
             <div id="modalTitle" class="modal-header">Notifikasi</div>
@@ -128,32 +126,39 @@ include "koneksi.php";
         </div>
     </div>
 
+    <div id="modalKonfirmasiUnduh" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header" style="color: #8b0000; font-weight: bold;">Konfirmasi Unduh Berkas</div>
+            <div class="modal-body">
+                Apakah Anda yakin ingin mengunduh dokumen: <br>
+                <strong id="namaFileUnduh" style="color: #111;"></strong>?
+            </div>
+            <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button type="button" class="btn-modal-cancel" onclick="tutupKonfirmasiUnduh()">Batal</button>
+                <a id="linkEksekusiUnduh" href="#" class="btn-modal-confirm" style="text-decoration: none; display: inline-block; line-height: normal; padding: 8px 16px;" onclick="tutupKonfirmasiUnduh()">Ya, Unduh</a>
+            </div>
+        </div>
+    </div>
+
     <script>
-        function toggleSidebar() {
-            document.getElementById("sidebarNav").classList.toggle("collapsed");
-        }
-
-        function toggleDropup(event) {
-            event.stopPropagation();
-            document.getElementById("dropupMenu").classList.toggle("active");
-        }
-
-        window.onclick = function() {
-            let dropup = document.getElementById("dropupMenu");
-            if (dropup.classList.contains("active")) {
-                dropup.classList.remove("active");
-            }
-        }
+        function toggleSidebar() { document.getElementById("sidebarNav").classList.toggle("collapsed"); }
+        function toggleDropup(event) { event.stopPropagation(); document.getElementById("dropupMenu").classList.toggle("active"); }
+        window.onclick = function() { let dropup = document.getElementById("dropupMenu"); if (dropup.classList.contains("active")) { dropup.classList.remove("active"); } }
 
         function tampilkanModal(judul, pesan) {
             document.getElementById("modalTitle").innerText = judul;
             document.getElementById("modalMessage").innerHTML = pesan;
             document.getElementById("modalBox").classList.add("active");
         }
+        function tutupModal() { document.getElementById("modalBox").classList.remove("active"); }
 
-        function tutupModal() {
-            document.getElementById("modalBox").classList.remove("active");
+        function konfirmasiUnduh(fileUrl, fileName) {
+            document.getElementById("namaFileUnduh").innerText = fileName;
+            document.getElementById("linkEksekusiUnduh").href = fileUrl;
+            document.getElementById("linkEksekusiUnduh").setAttribute("download", fileName);
+            document.getElementById("modalKonfirmasiUnduh").classList.add("active");
         }
+        function tutupKonfirmasiUnduh() { document.getElementById("modalKonfirmasiUnduh").classList.remove("active"); }
     </script>
 </body>
 </html>
