@@ -1,4 +1,6 @@
 <?php
+include "auth.php";
+require_login();
 include "koneksi.php";
 
 $folderUpload = __DIR__ . "/uploads/";
@@ -74,7 +76,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             <div class="sidebar-footer">
                 <div id="dropupMenu" class="dropup-menu">
                     <button class="dropup-item" onclick="tampilkanModalNotif('Pengaturan Akun', 'Membuka pengaturan profil dan preferensi sistem.')">⚙️ Pengaturan</button>
-                    <button class="dropup-item logout" onclick="tampilkanModalNotif('Keluar Sistem', 'Anda yakin ingin keluar dari sesi ini?')">🚪 Keluar</button>
+                    <a class="dropup-item logout" href="logout.php">🚪 Keluar</a>
                 </div>
                 <div class="user-profile" onclick="toggleDropup(event)">
                     <div class="user-info">

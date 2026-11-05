@@ -1,4 +1,6 @@
 <?php
+include "auth.php";
+require_login();
 include "koneksi.php";
 
 $hasil = mysqli_query($koneksi, "SELECT aksi, waktu FROM riwayat ORDER BY waktu DESC, id_riwayat DESC LIMIT 100");
@@ -30,7 +32,7 @@ $hasil = mysqli_query($koneksi, "SELECT aksi, waktu FROM riwayat ORDER BY waktu 
             <div class="sidebar-footer">
                 <div id="dropupMenu" class="dropup-menu">
                     <button class="dropup-item" onclick="tampilkanModal('Pengaturan Akun', 'Membuka pengaturan profil dan preferensi sistem.')">⚙️ Pengaturan</button>
-                    <button class="dropup-item logout" onclick="tampilkanModal('Keluar Sistem', 'Anda yakin ingin keluar dari sesi ini?')">🚪 Keluar</button>
+                    <a class="dropup-item logout" href="logout.php">🚪 Keluar</a>
                 </div>
                 <div class="user-profile" onclick="toggleDropup(event)">
                     <div class="user-info">

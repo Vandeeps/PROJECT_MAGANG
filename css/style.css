@@ -24,6 +24,15 @@ body {
     line-height: 1.5;
 }
 
+body.login-page {
+    background: #f4a75f;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
 .dashboard-container {
     display: flex;
     min-height: 100vh;
@@ -712,6 +721,165 @@ table tbody tr:hover {
 @keyframes fadeInModal {
     from { opacity: 0; transform: translateY(-10px); }
     to { opacity: 1; transform: translateY(0); }
+}
+
+.login-shell {
+    width: min(1280px, 100%);
+    min-height: 100vh;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: #f6a75f;
+}
+
+.login-header {
+    background: #f2f2f2;
+    border: 1px solid rgba(17, 17, 17, 0.16);
+    border-radius: 18px 18px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 28px 16px;
+    margin: 22px 0 0;
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.15);
+}
+
+.login-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 48px;
+}
+
+.login-brand-logo {
+    width: 180px;
+    height: auto;
+    display: block;
+}
+
+.login-website-link {
+    color: #111111;
+    font-size: 17px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.login-main {
+    position: relative;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px 80px;
+    overflow: hidden;
+}
+
+.login-map-overlay {
+    position: absolute;
+    inset: 0;
+    opacity: 0.62;
+    background-image: radial-gradient(circle, rgba(255,255,255,0.75) 1.5px, transparent 1.5px);
+    background-size: 14px 14px;
+    mask-image: radial-gradient(circle at 50% 35%, black 25%, transparent 85%);
+    -webkit-mask-image: radial-gradient(circle at 50% 35%, black 25%, transparent 80%);
+}
+
+.login-card {
+    position: relative;
+    z-index: 1;
+    width: min(460px, 100%);
+    background: rgba(255, 255, 255, 0.88);
+    border-radius: 18px;
+    box-shadow: 0 18px 38px rgba(0, 0, 0, 0.08);
+    padding: 36px 34px 28px;
+    border: 1px solid rgba(17,17,17,0.08);
+}
+
+.login-title {
+    text-align: center;
+    font-size: 38px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    color: #111827;
+    margin-bottom: 10px;
+}
+
+.login-subtitle {
+    text-align: center;
+    color: #4b5563;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.input-group label {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #f8fafc;
+    font-size: 14px;
+    color: #111827;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: #f59e0b;
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+}
+
+.login-btn {
+    margin-top: 6px;
+    width: 100%;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(180deg, #f28d2e, #ee7a14);
+    color: white;
+    font-size: 18px;
+    font-weight: 700;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.login-btn:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.02);
+}
+
+.login-help {
+    text-align: center;
+    color: #4b5563;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+.login-error {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 13px;
+    margin-bottom: 4px;
 }
 
 /* Kontainer Aksi Tabel 1 Baris Menyamping */
