@@ -504,3 +504,129 @@ table tbody tr:hover {
 .btn-modal-close:hover {
     background-color: #1e293b;
 }
+
+/* Styling Modern untuk Halaman Unggah Baru */
+.form-unggah-modern {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 100%;
+}
+
+.upload-dropzone {
+    border: 2px dashed #b0b0b0;
+    background-color: #eaeaea;
+    border-radius: 12px;
+    padding: 35px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.upload-dropzone:hover {
+    border-color: #8b0000;
+    background-color: #e2e2e2;
+}
+
+.file-input-hidden {
+    display: none;
+}
+
+.upload-icon {
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.upload-text-main {
+    font-size: 16px;
+    font-weight: 700;
+    color: #111;
+    margin-bottom: 4px;
+}
+
+.upload-text-sub {
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 8px;
+}
+
+.upload-text-info {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 16px;
+}
+
+.btn-pilih-file {
+    background-color: #8b0000;
+    color: #fff;
+    border: none;
+    padding: 8px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-pilih-file:hover {
+    background-color: #a30000;
+}
+
+.file-info-display {
+    background: #e8f4fd;
+    border: 1px solid #b8daff;
+    padding: 10px 15px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #004085;
+}
+
+.form-group-full label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #222;
+}
+
+.form-group-full textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 14px;
+    resize: vertical;
+    background-color: #e5e5e5;
+    box-sizing: border-box;
+}
+
+.form-action-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.btn-finalisasi {
+    background-color: #990000;
+    color: #fff;
+    border: none;
+    padding: 12px 30px;
+    font-size: 15px;
+    font-weight: 700;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-finalisasi:hover {
+    background-color: #7a0000;
+}
+
+.pesan-error {
+    background: #fdecea;
+    color: #b71c1c;
+    padding: 10px 14px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+}

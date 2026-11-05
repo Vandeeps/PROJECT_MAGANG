@@ -3,7 +3,7 @@ include "koneksi.php";
 
 $folderUpload = __DIR__ . "/uploads/";
 if (!is_dir($folderUpload)) {
-    mkdir($folderUpload, 0755, true);
+    mkdir($folderUpload, 0755, true);   
 }
 
 $ekstensiBoleh = ["pdf", "dwg", "xlsx", "xls", "docx", "doc", "png", "jpg", "jpeg"];
@@ -26,7 +26,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         } elseif ($ukuran > $ukuranMaks) {
             $pesanError = "Ukuran berkas maksimal 10 MB.";
         } else {
-            // Nama di server dibuat unik supaya tidak bentrok / menimpa file lain
             $namaDisimpan = uniqid("dok_", true) . "." . $ekstensi;
 
             if (move_uploaded_file($_FILES["berkas"]["tmp_name"], $folderUpload . $namaDisimpan)) {
@@ -53,17 +52,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Unggah Baru - Pusat Data Telkom Property</title>
+    <title>Unggah Baru – Pusat Data Telkom Property</title>
     <link rel="stylesheet" href="css/style.css">
-    <style>
-        .form-unggah { max-width: 520px; }
-        .form-unggah label { display: block; margin: 14px 0 6px; font-weight: 600; }
-        .form-unggah input[type="file"],
-        .form-unggah textarea { width: 100%; padding: 8px; box-sizing: border-box; }
-        .form-unggah textarea { min-height: 90px; resize: vertical; }
-        .form-unggah button { margin-top: 18px; padding: 10px 22px; cursor: pointer; }
-        .pesan-error { background: #fdecea; color: #b71c1c; padding: 10px 14px; border-radius: 6px; margin-bottom: 12px; }
-    </style>
 </head>
 <body>
 
@@ -103,23 +93,43 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             </header>
 
             <div class="content-body">
-                <h1 class="page-title">Unggah Dokumen Baru</h1>
+                <h1 class="page-title">Unggah Baru – Pusat Data Telkom Property</h1>
 
-                <div class="table-container">
-                    <?php if ($pesanError !== ""): ?>
-                        <div class="pesan-error"><?= htmlspecialchars($pesanError) ?></div>
-                    <?php endif; ?>
+                <?php if ($pesanError !== ""): ?>
+                    <div class="pesan-error"><?= htmlspecialchars($pesanError) ?></div>
+                <?php endif; ?>
 
-                    <form class="form-unggah" method="post" enctype="multipart/form-data">
-                        <label for="berkas">Pilih Berkas</label>
-                        <input type="file" name="berkas" id="berkas" required>
+                <form class="form-unggah-modern" method="post" enctype="multipart/form-data">
+                    
+                    <!-- Area Dropzone / Upload Modern -->
+                    <div class="upload-dropzone" id="dropzoneArea">
+                        <input type="file" name="berkas" id="berkas" class="file-input-hidden" required>
+                        <div class="upload-icon">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                        </div>
+                        <div class="upload-text-main">Seret & Lepas File ke Sini</div>
+                        <div class="upload-text-sub">atau klik untuk menelusuri</div>
+                        <div class="upload-text-info">Ukuran file maksimal 10MB. Format: PDF, DWG, XLSX, XLS, DOCX, DOC, PNG, JPG, JPEG</div>
+                        <button type="button" class="btn-pilih-file" onclick="document.getElementById('berkas').click()">Pilih File</button>
+                    </div>
 
-                        <label for="deskripsi">Deskripsi</label>
-                        <textarea name="deskripsi" id="deskripsi" placeholder="Keterangan singkat dokumen..."></textarea>
+                    <!-- Informasi Nama File Terpilih -->
+                    <div id="fileInfoDisplay" class="file-info-display" style="display: none;">
+                        <span>📄 File terpilih: <strong id="selectedFileName"></strong></span>
+                    </div>
 
-                        <button type="submit" class="btn-action btn-download">Unggah</button>
-                    </form>
-                </div>
+                    <!-- Deskripsi Dokumen di Bagian Paling Bawah -->
+                    <div class="form-group-full">
+                        <label for="deskripsi">Deskripsi Dokumen</label>
+                        <textarea name="deskripsi" id="deskripsi" placeholder="Tambahkan deskripsi atau catatan tambahan mengenai dokumen ini..."></textarea>
+                    </div>
+
+                    <!-- Tombol Aksi Utama -->
+                    <div class="form-action-container">
+                        <button type="submit" class="btn-finalisasi">Finalisasi & Simpan Dokumen</button>
+                    </div>
+
+                </form>
             </div>
         </main>
     </div>
@@ -154,6 +164,20 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         function tutupModal() {
             document.getElementById("modalBox").classList.remove("active");
         }
+
+        // Script interaktif untuk menampilkan nama file yang dipilih secara otomatis
+        const fileInput = document.getElementById('berkas');
+        const fileInfoDisplay = document.getElementById('fileInfoDisplay');
+        const selectedFileName = document.getElementById('selectedFileName');
+
+        fileInput.addEventListener('change', function() {
+            if (fileInput.files.length > 0) {
+                selectedFileName.innerText = fileInput.files[0].name;
+                fileInfoDisplay.style.display = 'block';
+            } else {
+                fileInfoDisplay.style.display = 'none';
+            }
+        });
     </script>
 </body>
 </html>
