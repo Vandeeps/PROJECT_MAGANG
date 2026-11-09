@@ -35,7 +35,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     "INSERT INTO data (file, nama_file, jenis_file, deskripsi) VALUES (?, ?, ?, ?)");
                 mysqli_stmt_bind_param($stmt, "ssss", $namaDisimpan, $namaAsli, $jenis, $deskripsi);
                 mysqli_stmt_execute($stmt);
+                $idBaru = mysqli_insert_id($koneksi);
                 mysqli_stmt_close($stmt);
+
+                // Versi pertama dokumen
+                catat_versi($koneksi, $idBaru, "v1.0", "Dokumen pertama kali diunggah", null, null, $namaDisimpan, $namaAsli);
 
                 catat_riwayat($koneksi, "Mengunggah dokumen: " . $namaAsli);
 

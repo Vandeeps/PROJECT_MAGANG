@@ -58,6 +58,12 @@ $hasil = mysqli_query($koneksi, "SELECT id_data, waktu, file, nama_file, jenis_f
                     </div>
                 <?php endif; ?>
 
+                <?php if (($_GET["status"] ?? "") === "diperbarui"): ?>
+                    <div style="background:#e8f5e9;color:#1b5e20;padding:10px 14px;border-radius:6px;margin-bottom:12px;">
+                        Dokumen berhasil diperbarui<?= isset($_GET["versi"]) ? " (" . htmlspecialchars($_GET["versi"]) . ")" : "" ?>.
+                    </div>
+                <?php endif; ?>
+
                 <div class="top-bar-controls">
                     <div class="search-box">
                         <input type="text" id="kotakPencarian" placeholder="Ketik untuk mencari dokumen..." onkeyup="jalankanPencarian()">
@@ -105,7 +111,7 @@ $hasil = mysqli_query($koneksi, "SELECT id_data, waktu, file, nama_file, jenis_f
                                         <div class="aksi-container">
                                             <button type="button" class="btn-action btn-download" onclick="konfirmasiUnduh('uploads/<?= rawurlencode($d["file"]) ?>', '<?= htmlspecialchars($d["nama_file"], ENT_QUOTES) ?>')">Unduh</button>
                                             <button type="button" class="btn-action btn-detail-popup" onclick="bukaDetail('<?= htmlspecialchars($d["nama_file"], ENT_QUOTES) ?>', '<?= htmlspecialchars($d["jenis_file"], ENT_QUOTES) ?>', '<?= htmlspecialchars(str_replace(["\r", "\n"], "<br>", $deskripsiAsli), ENT_QUOTES) ?>', '<?= date("d/m/Y H:i", strtotime($d["waktu"])) ?>', '<?= $ukuranFormatted ?>')">Detail</button>
-                                            <button type="button" class="btn-action btn-update" onclick="tampilkanModalNotif('Perbarui Dokumen', 'Fitur perbarui dokumen akan segera hadir.')">Perbarui</button>
+                                            <a href="update_dokumen.php?id=<?= (int) $d["id_data"] ?>" class="btn-action btn-update" style="text-decoration: none; display: inline-block;">Perbarui</a>
                                         </div>
                                     </td>
                                 </tr>

@@ -1,0 +1,135 @@
+/* Halaman Update Dokumen - Pusat Data Telkom Property
+   Warna aksen ada di variabel --aksen (ganti di sini jika ingin tema lain). */
+:root {
+    --aksen: #f7841f;
+    --aksen-gelap: #e07311;
+    --garis-form: #e2e8f0;
+}
+
+.crumb-link { color: inherit; text-decoration: none; }
+.crumb-link:hover { text-decoration: underline; }
+
+.page-sub { color: #64748b; font-size: 13px; margin: -8px 0 20px; }
+
+.kartu {
+    background: #fff;
+    border: 1px solid var(--garis-form);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.grup { margin-bottom: 20px; }
+
+.judul-isian {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 8px;
+}
+
+.isian {
+    width: 100%;
+    padding: 12px 14px;
+    background: #f8fafc;
+    border: 1px solid var(--garis-form);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 13px;
+    color: #0f172a;
+    outline: none;
+    transition: border-color .2s, box-shadow .2s, background .2s;
+}
+.isian:focus {
+    background: #fff;
+    border-color: var(--aksen);
+    box-shadow: 0 0 0 3px rgba(247, 132, 31, 0.18);
+}
+.isian.area { min-height: 110px; resize: vertical; }
+
+.bantuan { display: block; margin-top: 8px; font-size: 11.5px; color: #64748b; line-height: 1.5; }
+
+/* Pilihan radio berbentuk baris */
+.pilihan {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 14px;
+    margin-bottom: 8px;
+    background: #f8fafc;
+    border: 1px solid var(--garis-form);
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.pilihan:hover { border-color: #cbd5e1; }
+.pilihan input { accent-color: var(--aksen); width: 16px; height: 16px; margin: 0; cursor: pointer; }
+.pilihan:has(input:checked) { border-color: var(--aksen); background: #fff8f0; }
+
+/* Kotak pilih file: hanya tulisan "Pilih File" yang bisa diklik */
+.kotak-file {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+    background: #f8fafc;
+    border: 1px solid var(--garis-form);
+    border-radius: 8px;
+}
+.nama-file-baru { font-size: 13px; color: #64748b; word-break: break-all; }
+.input-tersembunyi { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.pilih-file-link { color: var(--aksen); font-weight: 700; font-size: 13px; cursor: pointer; white-space: nowrap; }
+.pilih-file-link:hover { color: var(--aksen-gelap); text-decoration: underline; }
+.grup.nonaktif .kotak-file { opacity: .5; }
+.grup.nonaktif .pilih-file-link { pointer-events: none; color: #94a3b8; }
+
+.baris-tombol { display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px; }
+
+.tombol {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    border: 1px solid transparent;
+    transition: background .2s, transform .1s;
+}
+.tombol:active { transform: translateY(1px); }
+.tombol-batal { background: #fff; color: #0f172a; border-color: var(--garis-form); }
+.tombol-batal:hover { background: #f1f5f9; }
+.tombol-simpan { background: var(--aksen); color: #fff; }
+.tombol-simpan:hover { background: var(--aksen-gelap); }
+
+/* Riwayat perubahan */
+.judul-kartu { font-size: 16px; font-weight: 700; color: #0f172a; margin-bottom: 4px; }
+.sub-kartu { font-size: 12px; color: #64748b; margin-bottom: 16px; }
+.tabel-bungkus { overflow-x: auto; border: 1px solid var(--garis-form); border-radius: 8px; }
+.tabel-versi { width: 100%; border-collapse: collapse; font-size: 13px; }
+.tabel-versi th { text-align: left; background: #f8fafc; font-size: 12px; padding: 12px 16px; text-transform: none; letter-spacing: 0; color: #0f172a; }
+.tabel-versi td { padding: 14px 16px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
+.tabel-versi tbody tr:last-child td { border-bottom: none; }
+
+.btn-modal-confirm { cursor: pointer; border: none; color: #fff; padding: 8px 16px; border-radius: 5px; font-weight: 600; font-size: 13px; }
+
+/* Tombol unduh per versi */
+.btn-unduh-versi {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    color: #059669;
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    transition: all .2s;
+}
+.btn-unduh-versi:hover { background: #059669; color: #fff; }
+.tidak-tersedia { font-size: 12px; color: #94a3b8; }
