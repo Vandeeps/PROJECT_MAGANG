@@ -2,6 +2,7 @@
 include "auth.php";
 include "koneksi.php";
 
+// Query sesuai struktur tabel asli Anda
 $hasil = mysqli_query($koneksi, "SELECT aksi, waktu FROM riwayat ORDER BY waktu DESC, id_riwayat DESC LIMIT 100");
 ?>
 <!DOCTYPE html>
@@ -9,66 +10,44 @@ $hasil = mysqli_query($koneksi, "SELECT aksi, waktu FROM riwayat ORDER BY waktu 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Histori - Pusat Data Telkom Property</title>
-    <link rel="stylesheet" href="css/style.css">
+    <title>Histori Aktivitas - Pusat Data Telkom Property</title>
+    <link rel="stylesheet" href="css/style.css?v=<?php echo time(); ?>">
 </head>
 <body>
 
     <div class="dashboard-container">
-        <aside class="sidebar" id="sidebarNav">
-            <div>
-                <div class="sidebar-header">
-                    <img src="img/Logo Telkom Dark.webp" alt="Logo Telkom Property" class="sidebar-logo">
-                </div>
-                <ul class="sidebar-menu">
-                    <li><a href="index.php"><span>Beranda</span></a></li>
-                    <li><a href="dokumen.php"><span>Dokumen</span></a></li>
-                    <li><a href="unggah.php"><span>Unggah Baru</span></a></li>
-                    <li class="active"><a href="histori.php"><span>Histori</span></a></li>
-                </ul>
-            </div>
-
-            <div class="sidebar-footer">
-                <div id="dropupMenu" class="dropup-menu">
-                    <button class="dropup-item" onclick="tampilkanModal('Pengaturan Akun', 'Membuka pengaturan profil dan preferensi sistem.')">⚙️ Pengaturan</button>
-                    <a class="dropup-item logout" href="logout.php" onclick="return confirm('Anda yakin ingin keluar dari sesi ini?')">🚪 Keluar</a>
-                </div>
-                <div class="user-profile" onclick="toggleDropup(event)">
-                    <div class="user-info">
-                        <span>👤</span>
-                        <span class="user-info-text"><?= htmlspecialchars($namaPengguna) ?></span>
-                    </div>
-                    <span class="user-arrow">▲</span>
-                </div>
-            </div>
-        </aside>
+        <!-- Sidebar Modular -->
+        <?php include "includes/sidebar.php"; ?>
 
         <main class="main-content">
             <header class="main-header">
                 <button class="btn-toggle" onclick="toggleSidebar()">☰ Menu</button>
-                <span>Beranda / Histori</span>
+                <span>Beranda / <strong>Histori</strong></span>
             </header>
 
             <div class="content-body">
-                <h1 class="page-title">Histori Aktivitas</h1>
+                <h1 class="page-title">Histori Aktivitas Sistem</h1>
+                <p class="page-sub">Catatan log aktivitas terbaru yang tercatat di dalam sistem.</p>
 
-                <div class="table-container">
+                <div class="table-container" style="margin-top: 20px;">
                     <table>
                         <thead>
                             <tr>
                                 <th>No</th>
-                                <th>Aktivitas</th>
                                 <th>Waktu</th>
+                                <th>Aksi / Keterangan</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <?php if (mysqli_num_rows($hasil) === 0): ?>
-                                <tr><td colspan="3">Belum ada aktivitas.</td></tr>
-                            <?php else: $no = 1; while ($baris = mysqli_fetch_assoc($hasil)): ?>
+                            <?php if (!$hasil || mysqli_num_rows($hasil) === 0): ?>
+                                <tr>
+                                    <td colspan="3" style="text-align: center; padding: 20px;">Belum ada riwayat aktivitas.</td>
+                                </tr>
+                            <?php else: $no = 1; while ($row = mysqli_fetch_assoc($hasil)): ?>
                                 <tr>
                                     <td><?= $no++ ?></td>
-                                    <td><?= htmlspecialchars($baris["aksi"]) ?></td>
-                                    <td><?= date("d/m/Y H:i", strtotime($baris["waktu"])) ?></td>
+                                    <td><?= htmlspecialchars($row["waktu"] ?? "-") ?></td>
+                                    <td><?= htmlspecialchars($row["aksi"] ?? "-") ?></td>
                                 </tr>
                             <?php endwhile; endif; ?>
                         </tbody>
@@ -78,35 +57,29 @@ $hasil = mysqli_query($koneksi, "SELECT aksi, waktu FROM riwayat ORDER BY waktu 
         </main>
     </div>
 
-    <div id="modalBox" class="modal-overlay">
-        <div class="modal-box">
-            <div id="modalTitle" class="modal-header">Notifikasi</div>
-            <div id="modalMessage" class="modal-body">Pesan informasi sistem.</div>
-            <div class="modal-footer">
-                <button class="btn-modal-close" onclick="tutupModal()">Tutup</button>
+    <!-- Modal Logout -->
+    <div id="modalLogout" class="modal-overlay">
+        <div class="modal-box" style="max-width: 380px;">
+            <div class="modal-header" style="color: #d32f2f; font-weight: bold;">Konfirmasi Keluar</div>
+            <div class="modal-body">Apakah Anda yakin ingin keluar dari sesi ini?</div>
+            <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 15px;">
+                <button type="button" class="btn-modal-cancel" onclick="tutupModalLogout()">Batal</button>
+                <a href="logout.php" class="btn-modal-confirm" style="background: #d32f2f; color: white; text-decoration: none; padding: 8px 16px; border-radius: 4px;">Ya, Keluar</a>
             </div>
         </div>
     </div>
 
     <script>
-        function toggleSidebar() {
-            document.getElementById("sidebarNav").classList.toggle("collapsed");
+        function toggleSidebar() { 
+            document.getElementById("sidebarNav").classList.toggle("collapsed"); 
         }
-        function toggleDropup(event) {
-            event.stopPropagation();
-            document.getElementById("dropupMenu").classList.toggle("active");
+        function toggleDropup(event) { 
+            event.stopPropagation(); 
+            document.getElementById("dropupMenu").classList.toggle("active"); 
         }
-        window.onclick = function() {
-            let dropup = document.getElementById("dropupMenu");
-            if (dropup.classList.contains("active")) dropup.classList.remove("active");
-        }
-        function tampilkanModal(judul, pesan) {
-            document.getElementById("modalTitle").innerText = judul;
-            document.getElementById("modalMessage").innerHTML = pesan;
-            document.getElementById("modalBox").classList.add("active");
-        }
-        function tutupModal() {
-            document.getElementById("modalBox").classList.remove("active");
+        window.onclick = function() { 
+            let dropup = document.getElementById("dropupMenu"); 
+            if (dropup && dropup.classList.contains("active")) dropup.classList.remove("active"); 
         }
     </script>
 </body>

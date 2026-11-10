@@ -1,5 +1,4 @@
 <?php
-// Mengunduh file milik satu versi dokumen (termasuk versi lama).
 include "auth.php";
 include "koneksi.php";
 
@@ -11,7 +10,6 @@ mysqli_stmt_execute($stmt);
 $v = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
 mysqli_stmt_close($stmt);
 
-// basename() mencegah akses ke folder lain; hanya file di dalam uploads/ yang boleh diunduh
 $path = $v && !empty($v["file"]) ? __DIR__ . "/uploads/" . basename($v["file"]) : "";
 
 if ($path === "" || !is_file($path)) {
@@ -20,7 +18,6 @@ if ($path === "" || !is_file($path)) {
     exit;
 }
 
-// Nama file yang diterima pengguna: nama pada versi tersebut
 $namaUnduh = $v["nama_file"] !== null && $v["nama_file"] !== "" ? $v["nama_file"] : basename($v["file"]);
 $namaAman  = str_replace(["\r", "\n", '"'], "", $namaUnduh);
 

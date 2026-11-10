@@ -3,11 +3,47 @@ include "auth.php";
 include "koneksi.php";
 
 $ekstensiBoleh = ["pdf", "dwg", "xlsx", "xls", "docx", "doc", "png", "jpg", "jpeg"];
+$folderUpload  = __DIR__ . "/uploads/";
 
-$keyword     = trim($_GET['keyword'] ?? '');
-$tanggalDari = $_GET['tanggal_dari'] ?? '';
+// Proses Hapus Dokumen jika ada parameter aksi=hapus
+if (isset($_GET["aksi"]) && $_GET["aksi"] === "hapus" && isset($_GET["id"])) {
+    $idHapus = (int) $_GET["id"];
+
+    $qCek = mysqli_prepare($koneksi, "SELECT file FROM data WHERE id_data = ?");
+    mysqli_stmt_bind_param($qCek, "i", $idHapus);
+    mysqli_stmt_execute($qCek);
+    $resCek = mysqli_stmt_get_result($qCek);
+    if ($rowCek = mysqli_fetch_assoc($resCek)) {
+        if (!empty($rowCek["file"]) && is_file($folderUpload . $rowCek["file"])) {
+            @unlink($folderUpload . $rowCek["file"]);
+        }
+    }
+    mysqli_stmt_close($qCek);
+
+    $qVer = mysqli_prepare($koneksi, "SELECT file FROM versi_dokumen WHERE id_data = ?");
+    mysqli_stmt_bind_param($qVer, "i", $idHapus);
+    mysqli_stmt_execute($qVer);
+    $resVer = mysqli_stmt_get_result($qVer);
+    while ($rowVer = mysqli_fetch_assoc($resVer)) {
+        if (!empty($rowVer["file"]) && is_file($folderUpload . $rowVer["file"])) {
+            @unlink($folderUpload . $rowVer["file"]);
+        }
+    }
+    mysqli_stmt_close($qVer);
+
+    mysqli_query($koneksi, "DELETE FROM versi_dokumen WHERE id_data = $idHapus");
+    mysqli_query($koneksi, "DELETE FROM data WHERE id_data = $idHapus");
+
+    catat_riwayat($koneksi, "Menghapus dokumen ID: " . $idHapus);
+
+    header("Location: dokumen.php?status=dihapus");
+    exit;
+}
+
+$keyword       = trim($_GET['keyword'] ?? '');
+$tanggalDari   = $_GET['tanggal_dari'] ?? '';
 $tanggalSampai = $_GET['tanggal_sampai'] ?? '';
-$tipeFile    = strtolower(trim($_GET['tipe_file'] ?? ''));
+$tipeFile      = strtolower(trim($_GET['tipe_file'] ?? ''));
 
 $sql = "SELECT id_data, waktu, file, nama_file, jenis_file, deskripsi FROM data WHERE 1=1";
 $params = [];
@@ -61,33 +97,8 @@ $hasil = mysqli_stmt_get_result($stmt);
 <body>
 
     <div class="dashboard-container">
-        <aside class="sidebar" id="sidebarNav">
-            <div>
-                <div class="sidebar-header">
-                    <img src="img/Logo Telkom Dark.webp" alt="Logo Telkom Property" class="sidebar-logo">
-                </div>
-                <ul class="sidebar-menu">
-                    <li><a href="index.php"><span>Beranda</span></a></li>
-                    <li class="active"><a href="dokumen.php"><span>Dokumen</span></a></li>
-                    <li><a href="unggah.php"><span>Unggah Baru</span></a></li>
-                    <li><a href="histori.php"><span>Histori</span></a></li>
-                </ul>
-            </div>
-
-            <div class="sidebar-footer">
-                <div id="dropupMenu" class="dropup-menu">
-                    <button class="dropup-item" onclick="tampilkanModalNotif('Pengaturan Akun', 'Membuka pengaturan profil dan preferensi sistem.')">⚙️ Pengaturan</button>
-                    <a class="dropup-item logout" href="logout.php" onclick="return confirm('Anda yakin ingin keluar dari sesi ini?')">🚪 Keluar</a>
-                </div>
-                <div class="user-profile" onclick="toggleDropup(event)">
-                    <div class="user-info">
-                        <span>👤</span>
-                        <span class="user-info-text"><?= htmlspecialchars($namaPengguna) ?></span>
-                    </div>
-                    <span class="user-arrow">▲</span>
-                </div>
-            </div>
-        </aside>
+        <!-- SIDEBAR DIMUAT DARI FOLDER INCLUDES -->
+        <?php include "includes/sidebar.php"; ?>
 
         <main class="main-content">
             <header class="main-header">
@@ -98,15 +109,9 @@ $hasil = mysqli_stmt_get_result($stmt);
             <div class="content-body">
                 <h1 class="page-title">Repositori Dokumen – Pusat Data Telkom Property</h1>
 
-                <?php if (($_GET["status"] ?? "") === "sukses"): ?>
-                    <div style="background:#e8f5e9;color:#1b5e20;padding:10px 14px;border-radius:6px;margin-bottom:12px;">
-                        Dokumen berhasil diunggah.
-                    </div>
-                <?php endif; ?>
-
-                <?php if (($_GET["status"] ?? "") === "diperbarui"): ?>
-                    <div style="background:#e8f5e9;color:#1b5e20;padding:10px 14px;border-radius:6px;margin-bottom:12px;">
-                        Dokumen berhasil diperbarui<?= isset($_GET["versi"]) ? " (" . htmlspecialchars($_GET["versi"]) . ")" : "" ?>.
+                <?php if (($_GET["status"] ?? "") === "dihapus"): ?>
+                    <div style="background:#ffebee;color:#c62828;padding:10px 14px;border-radius:6px;margin-bottom:12px;">
+                        Dokumen berhasil dihapus dari sistem.
                     </div>
                 <?php endif; ?>
 
@@ -157,10 +162,11 @@ $hasil = mysqli_stmt_get_result($stmt);
                                     <td><?= htmlspecialchars($deskripsiPendek !== "" ? $deskripsiPendek : "-") ?></td>
                                     <td><?= date("d/m/Y", strtotime($d["waktu"])) ?></td>
                                     <td>
-                                        <div class="aksi-container">
+                                        <div class="aksi-container" style="display: flex; gap: 6px; align-items: center;">
                                             <button type="button" class="btn-action btn-download" onclick="konfirmasiUnduh('uploads/<?= rawurlencode($d["file"]) ?>', '<?= htmlspecialchars($d["nama_file"], ENT_QUOTES) ?>')">Unduh</button>
                                             <button type="button" class="btn-action btn-detail-popup" onclick="bukaDetail('<?= htmlspecialchars($d["nama_file"], ENT_QUOTES) ?>', '<?= htmlspecialchars($d["jenis_file"], ENT_QUOTES) ?>', '<?= htmlspecialchars(str_replace(["\r", "\n"], "<br>", $deskripsiAsli), ENT_QUOTES) ?>', '<?= date("d/m/Y H:i", strtotime($d["waktu"])) ?>', '<?= $ukuranFormatted ?>')">Detail</button>
                                             <a href="update_dokumen.php?id=<?= (int) $d["id_data"] ?>" class="btn-action btn-update" style="text-decoration: none; display: inline-block;">Perbarui</a>
+                                            <button type="button" class="btn-action btn-hapus" onclick="bukaModalHapus(<?= (int) $d["id_data"] ?>, '<?= htmlspecialchars($d["nama_file"], ENT_QUOTES) ?>')">Hapus</button>
                                         </div>
                                     </td>
                                 </tr>
@@ -172,6 +178,7 @@ $hasil = mysqli_stmt_get_result($stmt);
         </main>
     </div>
 
+    <!-- Modal Notifikasi Umum -->
     <div id="modalBox" class="modal-overlay">
         <div class="modal-box">
             <div id="modalTitle" class="modal-header">Notifikasi</div>
@@ -182,6 +189,7 @@ $hasil = mysqli_stmt_get_result($stmt);
         </div>
     </div>
 
+    <!-- Modal Filter Lanjutan -->
     <div id="modalFilter" class="modal-overlay">
         <div class="modal-box" style="max-width: 420px;">
             <div class="modal-header" style="color: #8b0000; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 12px;">Filter Dokumen Lanjutan</div>
@@ -205,7 +213,7 @@ $hasil = mysqli_stmt_get_result($stmt);
                             <option value="">-- Semua Ekstensi --</option>
                             <?php foreach ($ekstensiBoleh as $ekstensi): ?>
                                 <option value="<?= $ekstensi ?>" <?= ($tipeFile === $ekstensi) ? 'selected' : '' ?>><?= strtoupper($ekstensi) ?></option>
-                          <?php endforeach; ?>
+                            <?php endforeach; ?>
                         </select>
                     </div>
                 </div>
@@ -217,6 +225,7 @@ $hasil = mysqli_stmt_get_result($stmt);
         </div>
     </div>
 
+    <!-- Modal Detail Dokumen Lengkap -->
     <div id="modalDetailDokumen" class="modal-overlay">
         <div class="modal-box" style="max-width: 480px;">
             <div class="modal-header" style="color: #8b0000; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 12px;">Detail Dokumen</div>
@@ -234,6 +243,7 @@ $hasil = mysqli_stmt_get_result($stmt);
         </div>
     </div>
 
+    <!-- Modal Konfirmasi Unduh -->
     <div id="modalKonfirmasiUnduh" class="modal-overlay">
         <div class="modal-box">
             <div class="modal-header" style="color: #8b0000; font-weight: bold;">Konfirmasi Unduh Berkas</div>
@@ -244,6 +254,25 @@ $hasil = mysqli_stmt_get_result($stmt);
             <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end;">
                 <button type="button" class="btn-modal-cancel" onclick="tutupKonfirmasiUnduh()">Batal</button>
                 <a id="linkEksekusiUnduh" href="#" class="btn-modal-confirm" style="text-decoration: none; display: inline-block; line-height: normal; padding: 8px 16px;" onclick="tutupKonfirmasiUnduh()">Ya, Unduh</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Konfirmasi Hapus Khusus -->
+    <div id="modalHapusPeringatan" class="modal-overlay hapus-warning">
+        <div class="modal-box hapus-warning-box">
+            <div class="hapus-warning-header">
+                <div class="hapus-warning-icon">⚠️</div>
+                <span>Peringatan Penghapusan Permanen</span>
+            </div>
+            <div class="hapus-warning-body">
+                Tindakan ini bersifat permanen dan akan menghapus data dokumen beserta file fisiknya dari server secara utuh.
+                <div class="hapus-warning-target" id="teksNamaFileHapus">-</div>
+                Apakah Anda benar-benar yakin ingin menghapus dokumen ini?
+            </div>
+            <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                <button type="button" class="btn-modal-cancel" onclick="tutupModalHapus()">Batal</button>
+                <a id="linkEksekusiHapus" href="#" class="btn-modal-danger">Ya, Hapus Permanen</a>
             </div>
         </div>
     </div>
@@ -292,6 +321,15 @@ $hasil = mysqli_stmt_get_result($stmt);
             document.getElementById("modalKonfirmasiUnduh").classList.add("active");
         }
         function tutupKonfirmasiUnduh() { document.getElementById("modalKonfirmasiUnduh").classList.remove("active"); }
+
+        function bukaModalHapus(idData, namaFile) {
+            document.getElementById("teksNamaFileHapus").innerText = namaFile;
+            document.getElementById("linkEksekusiHapus").href = "dokumen.php?aksi=hapus&id=" + idData;
+            document.getElementById("modalHapusPeringatan").classList.add("active");
+        }
+        function tutupModalHapus() {
+            document.getElementById("modalHapusPeringatan").classList.remove("active");
+        }
     </script>
 </body>
 </html>

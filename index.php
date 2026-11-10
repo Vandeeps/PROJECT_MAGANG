@@ -2,14 +2,17 @@
 include "auth.php";
 include "koneksi.php";
 
+// 1. Total Dokumen Keseluruhan
 $queryTotal = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM data");
 $dataTotal = mysqli_fetch_assoc($queryTotal);
 $totalDokumen = $dataTotal['total'] ?? 0;
 
+// 2. Dokumen yang diunggah hari ini
 $queryHariIni = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM data WHERE DATE(waktu) = CURDATE()");
 $dataHariIni = mysqli_fetch_assoc($queryHariIni);
 $totalHariIni = $dataHariIni['total'] ?? 0;
 
+// 3. Menghitung total ukuran file dari folder uploads/
 $folderUpload = "uploads/";
 $totalBytes = 0;
 if (is_dir($folderUpload)) {
@@ -24,6 +27,7 @@ if (is_dir($folderUpload)) {
     }
 }
 
+// Konversi bytes ke format yang mudah dibaca (MB / GB)
 function formatSize($bytes) {
     if ($bytes >= 1073741824) {
         return number_format($bytes / 1073741824, 2) . ' GB';
@@ -37,6 +41,7 @@ function formatSize($bytes) {
 }
 $ukuranTotal = formatSize($totalBytes);
 
+// Query aktivitas terbaru (menyertakan id_data agar bisa digunakan pada link perbarui)
 $queryAktivitas = mysqli_query($koneksi, "SELECT id_data, waktu, file, nama_file, jenis_file, deskripsi FROM data ORDER BY waktu DESC LIMIT 5");
 ?>
 <!DOCTYPE html>
@@ -49,35 +54,10 @@ $queryAktivitas = mysqli_query($koneksi, "SELECT id_data, waktu, file, nama_file
 </head>
 <body>
 
-    <div class="dashboard-container">
-        <aside class="sidebar" id="sidebarNav">
-            <div>
-                <div class="sidebar-header">
-                    <img src="img/Logo Telkom Dark.webp" alt="Logo Telkom Property" class="sidebar-logo">
-                </div>
-                <ul class="sidebar-menu">
-                    <li class="active"><a href="index.php"><span>Beranda</span></a></li>
-                    <li><a href="dokumen.php"><span>Dokumen</span></a></li>
-                    <li><a href="unggah.php"><span>Unggah Baru</span></a></li>
-                    <li><a href="histori.php"><span>Histori</span></a></li>
-                </ul>
-            </div>
-            
-            <div class="sidebar-footer">
-                <div id="dropupMenu" class="dropup-menu">
-                    <button class="dropup-item" onclick="tampilkanModal('Pengaturan Akun', 'Membuka pengaturan profil dan preferensi sistem.')">⚙️ Pengaturan</button>
-                    <a class="dropup-item logout" href="logout.php" onclick="return confirm('Anda yakin ingin keluar dari sesi ini?')">🚪 Keluar</a>
-                </div>
-                <div class="user-profile" onclick="toggleDropup(event)">
-                    <div class="user-info">
-                        <span>👤</span>
-                        <span class="user-info-text"><?= htmlspecialchars($namaPengguna) ?></span>
-                    </div>
-                    <span class="user-arrow">▲</span>
-                </div>
-            </div>
-        </aside>
-
+     <div class="dashboard-container">
+        <!-- SIDEBAR DIMUAT DARI FOLDER INCLUDES -->
+        <?php include "includes/sidebar.php"; ?>
+        
         <main class="main-content">
             <header class="main-header">
                 <button class="btn-toggle" onclick="toggleSidebar()">☰ Menu</button>
@@ -135,7 +115,7 @@ $queryAktivitas = mysqli_query($koneksi, "SELECT id_data, waktu, file, nama_file
                                     <td>
                                         <div style="display: flex; gap: 6px;">
                                             <button type="button" class="btn-action btn-download" onclick="konfirmasiUnduh('uploads/<?= rawurlencode($d["file"]) ?>', '<?= htmlspecialchars($d["nama_file"], ENT_QUOTES) ?>')">Unduh</button>
-                                            <button type="button" class="btn-action btn-update" onclick="tampilkanModal('Informasi', 'Fitur pembaruan dokumen akan segera diperbarui.')">Perbarui</button>
+                                            <a href="update_dokumen.php?id=<?= (int) $d["id_data"] ?>" class="btn-action btn-update" style="text-decoration: none; display: inline-block; line-height: normal; padding: 4px 10px;">Perbarui</a>
                                         </div>
                                     </td>
                                 </tr>
