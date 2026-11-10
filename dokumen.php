@@ -2,7 +2,53 @@
 include "auth.php";
 include "koneksi.php";
 
-$hasil = mysqli_query($koneksi, "SELECT id_data, waktu, file, nama_file, jenis_file, deskripsi FROM data ORDER BY waktu DESC");
+$ekstensiBoleh = ["pdf", "dwg", "xlsx", "xls", "docx", "doc", "png", "jpg", "jpeg"];
+
+$keyword     = trim($_GET['keyword'] ?? '');
+$tanggalDari = $_GET['tanggal_dari'] ?? '';
+$tanggalSampai = $_GET['tanggal_sampai'] ?? '';
+$tipeFile    = strtolower(trim($_GET['tipe_file'] ?? ''));
+
+$sql = "SELECT id_data, waktu, file, nama_file, jenis_file, deskripsi FROM data WHERE 1=1";
+$params = [];
+$types  = "";
+
+if ($keyword !== '') {
+    $sql .= " AND (nama_file LIKE ? OR deskripsi LIKE ?)";
+    $likeKeyword = "%" . $keyword . "%";
+    $params[] = $likeKeyword;
+    $params[] = $likeKeyword;
+    $types  .= "ss";
+}
+
+if ($tanggalDari !== '') {
+    $sql .= " AND DATE(waktu) >= ?";
+    $params[] = $tanggalDari;
+    $types  .= "s";
+}
+
+if ($tanggalSampai !== '') {
+    $sql .= " AND DATE(waktu) <= ?";
+    $params[] = $tanggalSampai;
+    $types  .= "s";
+}
+
+if ($tipeFile !== '') {
+    $sql .= " AND (LOWER(jenis_file) LIKE ? OR LOWER(file) LIKE ? OR LOWER(nama_file) LIKE ?)";
+    $params[] = "%" . $tipeFile . "%";
+    $params[] = "%." . $tipeFile;
+    $params[] = "%." . $tipeFile;
+    $types  .= "sss";
+}
+
+$sql .= " ORDER BY waktu DESC";
+
+$stmt = mysqli_prepare($koneksi, $sql);
+if (!empty($params)) {
+    mysqli_stmt_bind_param($stmt, $types, ...$params);
+}
+mysqli_stmt_execute($stmt);
+$hasil = mysqli_stmt_get_result($stmt);
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -66,9 +112,14 @@ $hasil = mysqli_query($koneksi, "SELECT id_data, waktu, file, nama_file, jenis_f
 
                 <div class="top-bar-controls">
                     <div class="search-box">
-                        <input type="text" id="kotakPencarian" placeholder="Ketik untuk mencari dokumen..." onkeyup="jalankanPencarian()">
+                        <input type="text" id="kotakPencarian" placeholder="Ketik untuk mencari dokumen..." value="<?= htmlspecialchars($keyword) ?>" onkeyup="jalankanPencarian()">
                     </div>
-                    <button class="btn-filter" onclick="tampilkanModalNotif('Filter Data', 'Panel opsi filter kategori dokumen lanjutan akan ditampilkan di sini.')">Tampilkan Berdasarkan</button>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn-filter" onclick="bukaModalFilter()">Tampilkan Berdasarkan</button>
+                        <?php if($keyword !== '' || $tanggalDari !== '' || $tanggalSampai !== '' || $tipeFile !== ''): ?>
+                            <a href="dokumen.php" style="padding: 8px 12px; background: #e0e0e0; color: #333; text-decoration: none; border-radius: 4px; font-size: 13px; display: inline-flex; align-items: center;">Reset Filter</a>
+                        <?php endif; ?>
+                    </div>
                 </div>
 
                 <div class="table-container">
@@ -84,9 +135,8 @@ $hasil = mysqli_query($koneksi, "SELECT id_data, waktu, file, nama_file, jenis_f
                         </thead>
                         <tbody>
                             <?php if (mysqli_num_rows($hasil) === 0): ?>
-                                <tr><td colspan="5" style="text-align: center;">Belum ada dokumen. Silakan unggah dari menu "Unggah Baru".</td></tr>
+                                <tr><td colspan="5" style="text-align: center;">Tidak ada dokumen yang ditemukan sesuai filter/pencarian.</td></tr>
                             <?php else: while ($d = mysqli_fetch_assoc($hasil)): 
-                                // Menghitung ukuran file fisik di server
                                 $filePath = __DIR__ . "/uploads/" . $d["file"];
                                 $ukuranFormatted = "Tidak diketahui";
                                 if (file_exists($filePath)) {
@@ -98,7 +148,6 @@ $hasil = mysqli_query($koneksi, "SELECT id_data, waktu, file, nama_file, jenis_f
                                     }
                                 }
 
-                                // Potong deskripsi agar bersih dan stabil 1 baris di tabel (tanpa teks [Detail])
                                 $deskripsiAsli = $d["deskripsi"];
                                 $deskripsiPendek = (mb_strlen($deskripsiAsli) > 40) ? mb_substr($deskripsiAsli, 0, 40) . "..." : $deskripsiAsli;
                             ?>
@@ -123,7 +172,6 @@ $hasil = mysqli_query($koneksi, "SELECT id_data, waktu, file, nama_file, jenis_f
         </main>
     </div>
 
-    <!-- Modal Notifikasi Umum -->
     <div id="modalBox" class="modal-overlay">
         <div class="modal-box">
             <div id="modalTitle" class="modal-header">Notifikasi</div>
@@ -134,7 +182,41 @@ $hasil = mysqli_query($koneksi, "SELECT id_data, waktu, file, nama_file, jenis_f
         </div>
     </div>
 
-    <!-- Modal Detail Dokumen Lengkap -->
+    <div id="modalFilter" class="modal-overlay">
+        <div class="modal-box" style="max-width: 420px;">
+            <div class="modal-header" style="color: #8b0000; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 12px;">Filter Dokumen Lanjutan</div>
+            <form method="GET" action="dokumen.php">
+                <div class="modal-body" style="font-size: 14px; line-height: 1.6;">
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; font-weight: 600; margin-bottom: 4px;">Cari Nama / Deskripsi:</label>
+                        <input type="text" name="keyword" value="<?= htmlspecialchars($keyword) ?>" placeholder="Kata kunci..." style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; font-weight: 600; margin-bottom: 4px;">Dari Tanggal:</label>
+                        <input type="date" name="tanggal_dari" value="<?= htmlspecialchars($tanggalDari) ?>" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; font-weight: 600; margin-bottom: 4px;">Sampai Tanggal:</label>
+                        <input type="date" name="tanggal_sampai" value="<?= htmlspecialchars($tanggalSampai) ?>" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; font-weight: 600; margin-bottom: 4px;">Tipe / Ekstensi File:</label>
+                        <select name="tipe_file" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                            <option value="">-- Semua Ekstensi --</option>
+                            <?php foreach ($ekstensiBoleh as $ekstensi): ?>
+                                <option value="<?= $ekstensi ?>" <?= ($tipeFile === $ekstensi) ? 'selected' : '' ?>><?= strtoupper($ekstensi) ?></option>
+                          <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 15px;">
+                    <button type="button" class="btn-modal-cancel" onclick="tutupModalFilter()">Batal</button>
+                    <button type="submit" class="btn-modal-confirm" style="padding: 8px 16px; border: none; cursor: pointer; border-radius: 4px;">Terapkan Filter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div id="modalDetailDokumen" class="modal-overlay">
         <div class="modal-box" style="max-width: 480px;">
             <div class="modal-header" style="color: #8b0000; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 12px;">Detail Dokumen</div>
@@ -152,7 +234,6 @@ $hasil = mysqli_query($koneksi, "SELECT id_data, waktu, file, nama_file, jenis_f
         </div>
     </div>
 
-    <!-- Modal Konfirmasi Unduh -->
     <div id="modalKonfirmasiUnduh" class="modal-overlay">
         <div class="modal-box">
             <div class="modal-header" style="color: #8b0000; font-weight: bold;">Konfirmasi Unduh Berkas</div>
@@ -190,6 +271,9 @@ $hasil = mysqli_query($koneksi, "SELECT id_data, waktu, file, nama_file, jenis_f
             document.getElementById("modalBox").classList.add("active");
         }
         function tutupModalNotif() { document.getElementById("modalBox").classList.remove("active"); }
+
+        function bukaModalFilter() { document.getElementById("modalFilter").classList.add("active"); }
+        function tutupModalFilter() { document.getElementById("modalFilter").classList.remove("active"); }
 
         function bukaDetail(nama, tipe, deskripsi, tanggal, ukuran) {
             document.getElementById("detNama").innerText = nama;

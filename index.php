@@ -6,6 +6,37 @@ $queryTotal = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM data");
 $dataTotal = mysqli_fetch_assoc($queryTotal);
 $totalDokumen = $dataTotal['total'] ?? 0;
 
+$queryHariIni = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM data WHERE DATE(waktu) = CURDATE()");
+$dataHariIni = mysqli_fetch_assoc($queryHariIni);
+$totalHariIni = $dataHariIni['total'] ?? 0;
+
+$folderUpload = "uploads/";
+$totalBytes = 0;
+if (is_dir($folderUpload)) {
+    $files = scandir($folderUpload);
+    foreach ($files as $file) {
+        if ($file !== '.' && $file !== '..') {
+            $filePath = $folderUpload . $file;
+            if (is_file($filePath)) {
+                $totalBytes += filesize($filePath);
+            }
+        }
+    }
+}
+
+function formatSize($bytes) {
+    if ($bytes >= 1073741824) {
+        return number_format($bytes / 1073741824, 2) . ' GB';
+    } elseif ($bytes >= 1048576) {
+        return number_format($bytes / 1048576, 2) . ' MB';
+    } elseif ($bytes >= 1024) {
+        return number_format($bytes / 1024, 2) . ' KB';
+    } else {
+        return $bytes . ' Bytes';
+    }
+}
+$ukuranTotal = formatSize($totalBytes);
+
 $queryAktivitas = mysqli_query($koneksi, "SELECT id_data, waktu, file, nama_file, jenis_file, deskripsi FROM data ORDER BY waktu DESC LIMIT 5");
 ?>
 <!DOCTYPE html>
@@ -65,14 +96,14 @@ $queryAktivitas = mysqli_query($koneksi, "SELECT id_data, waktu, file, nama_file
                     </div>
                     <div class="stat-card">
                         <div class="stat-info">
-                            <h3>Total Gedung</h3>
-                            <div class="value">320</div>
+                            <h3>Unggahan Hari Ini</h3>
+                            <div class="value"><?= number_format($totalHariIni) ?></div>
                         </div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-info">
-                            <h3>Pembaruan Bulan Ini</h3>
-                            <div class="value">45</div>
+                            <h3>Ukuran Total</h3>
+                            <div class="value"><?= $ukuranTotal ?></div>
                         </div>
                     </div>
                 </div>
@@ -93,7 +124,6 @@ $queryAktivitas = mysqli_query($koneksi, "SELECT id_data, waktu, file, nama_file
                             <?php if (mysqli_num_rows($queryAktivitas) === 0): ?>
                                 <tr><td colspan="5" style="text-align: center;">Belum ada aktivitas unggahan dokumen.</td></tr>
                             <?php else: while ($d = mysqli_fetch_assoc($queryAktivitas)): 
-                                // Potong deskripsi agar pendek di index.php
                                 $deskripsiAsli = $d["deskripsi"];
                                 $deskripsiSingkat = (mb_strlen($deskripsiAsli) > 40) ? mb_substr($deskripsiAsli, 0, 40) . "..." : $deskripsiAsli;
                             ?>
